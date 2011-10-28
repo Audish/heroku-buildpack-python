@@ -9,7 +9,7 @@ CACHE_DIR=$2
 
 NAME=$($BIN_DIR/detect $BUILD_DIR)
 PIP_DOWNLOAD_CACHE=${PIP_DOWNLOAD_CACHE:-$CACHE_DIR/pip_downloads}
-VIRTUALENV_DIRS="bin include lib"
+VIRTUALENV_DIR="env"
 
 indent() {
   RE="s/^/       /"
@@ -25,12 +25,10 @@ fi
 
 # copy artifacts out of cache if exists
 mkdir -p $CACHE_DIR
-for dir in $VIRTUALENV_DIRS; do
-  cp -R $CACHE_DIR/$dir . &> /dev/null || true
-done
+cp -R $CACHE_DIR/$VIRTUALENV_DIR . &> /dev/null || true
 
 echo "-----> Preparing virtualenv version $(virtualenv --version)"
-virtualenv --no-site-packages . | indent
+virtualenv --no-site-packages $VIRTUALENV_DIR | indent
 
 # if Django, append settings
 if [ "$NAME" = "Python/Django" ]; then
@@ -65,11 +63,11 @@ except:
 EOF
 fi
 
-echo "-----> Installing dependencies using pip version $(bin/pip --version | awk '{print $2}')"
-PIP_DOWNLOAD_CACHE=$PIP_DOWNLOAD_CACHE bin/pip install --use-mirrors -r requirements.txt | indent
+echo "-----> Installing dependencies using pip version $(env/bin/pip --version | awk '{print $2}')"
+PIP_DOWNLOAD_CACHE=$PIP_DOWNLOAD_CACHE env/bin/pip install --use-mirrors -r requirements.txt | indent
 
 set +e
-OUT=$(virtualenv --relocatable .)
+OUT=$(virtualenv --relocatable $VIRTUALENV_DIR)
 [ $? -ne 0 ] && {
   echo " !     Error making virtualenv relocatable"
   echo "$OUT" | indent
@@ -78,7 +76,5 @@ OUT=$(virtualenv --relocatable .)
 set -e
 
 # store new artifacts in cache
-for dir in $VIRTUALENV_DIRS; do
-  rm -rf $CACHE_DIR/$dir
-  cp -R $dir $CACHE_DIR/
-done
+rm -rf $CACHE_DIR/$VIRTUALENV_DIR
+cp -R $VIRTUALENV_DIR $CACHE_DIR/
