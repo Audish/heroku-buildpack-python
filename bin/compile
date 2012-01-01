@@ -46,6 +46,8 @@ if [ -f "lib/python2.7" ]; then
   exit 1;
 fi
 
+python -c 'import uuid ; print uuid.uuid4().hex' > SLUG_UUID
+
 # Copy artifacts out of cache if exists.
 mkdir -p $CACHE_DIR
 for dir in $VIRTUALENV_DIRS; do
