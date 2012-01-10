@@ -97,6 +97,10 @@ if [ "$NAME" = "Python/Django" ] && ! grep HEROKU_NO_DJANGO_SETTINGS **/settings
   source $BIN_DIR/steps/django
 fi
 
+# ugly way to make sure builtin dependencies are always reinstalled even if their version is the same
+echo "-----> Installing builtin dependencies using pip version $(bin/pip --version | awk '{print $2}')"
+PIP_DOWNLOAD_CACHE=$PIP_DOWNLOAD_CACHE bin/pip install --use-mirrors --ignore-installed $(find deps setup.py -type f -name 'setup.py' -exec sh -c 'dirname $(pwd)'/{} \;) | indent
+
 # Make virtualenv relocatable.
 set +e
 OUT=$(virtualenv --relocatable .)
@@ -112,3 +116,8 @@ for dir in $VIRTUALENV_DIRS; do
   rm -rf $CACHE_DIR/$dir
   cp -R $dir $CACHE_DIR/
 done
+
+if [ -x .slugfinalize ]; then
+    echo "-----> Running .slugfinalize"
+    ./.slugfinalize | indent
+fi
