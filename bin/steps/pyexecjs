@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+echo "-----> Noticed pyexecjs. Bootstrapping node."
+
+curl -L -s $VENDORED_NODE | tar -zx -C bin
+# pyexecjs 1.0 has a bug where it expects an external binary called 'command'; we'll create this binary for it
+#  and activate the venv so 'command' will be in the path (https://github.com/doloopwhile/PyExecJS/pull/1)
+cat << EOF > bin/command
+#!/usr/bin/env bash
+
+command "\$@"
+EOF
+chmod 700 bin/command
+source bin/activate

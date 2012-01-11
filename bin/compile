@@ -15,6 +15,7 @@ NAME=$($BIN_DIR/detect $BUILD_DIR)
 PIP_DOWNLOAD_CACHE=${PIP_DOWNLOAD_CACHE:-$CACHE_DIR/pip_downloads}
 VIRTUALENV_DIRS="bin include lib"
 VENDORED_MEMCACHED="http://cl.ly/0a191R3K160t1w1P0N25/vendor-libmemcached.tar.gz"
+VENDORED_NODE="https://s3.amazonaws.com/audish-binaries/node-0.4.7.tgz"
 
 unset GIT_DIR
 export PIP_DOWNLOAD_CACHE
@@ -57,6 +58,11 @@ done
 # Create virtualenv. Rebuild if corrupt.
 set +e
 echo "-----> Preparing virtualenv version $(virtualenv --version)"
+
+# if pyexecjs within requirements, use vendored node
+if (grep -v ^# requirements.txt | grep -Fiq "pyexecjs=" requirements.txt); then
+    source $BIN_DIR/steps/pyexecjs
+fi
 
 # Try to create the virtualenv.
 OUT=$(virtualenv --distribute --never-download  --prompt=venv . 2>&1)
