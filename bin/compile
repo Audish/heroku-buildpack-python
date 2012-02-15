@@ -59,9 +59,9 @@ done
 set +e
 echo "-----> Preparing virtualenv version $(virtualenv --version)"
 
-# if pyexecjs within requirements, use vendored node
-if (grep -v ^# requirements.txt | grep -Fiq "pyexecjs=" requirements.txt); then
-    source $BIN_DIR/steps/pyexecjs
+if [ -f .neednode ]; then
+    echo "-----> Vendoring node from $VENDORED_NODE"
+    curl -L -s $VENDORED_NODE | tar -zx -C bin
 fi
 
 # Try to create the virtualenv.
